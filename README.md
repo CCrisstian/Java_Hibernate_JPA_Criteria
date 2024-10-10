@@ -12,3 +12,51 @@
 - <b>Tipo seguro</b>: Al construir consultas con objetos Java, los nombres de los campos y las relaciones entre las entidades se verifican en tiempo de compilación, reduciendo los errores.
 - <b>Compatibilidad con JPA</b>: Criteria API es parte de JPA, lo que significa que es compatible con cualquier implementación de JPA (como Hibernate, EclipseLink, etc.).
 - <b>Construcción de consultas complejas</b>: Es muy útil cuando se necesitan consultas que involucren múltiples relaciones, agrupamientos o funciones de agregación.
+
+<h1 align="center">CriteriaBuilder, CriteriaQuery <...>, Root <...></h1>
+
+```java
+public class HibernateCriteria {
+    public static void main(String[] args) {
+
+        EntityManager em = JpaUtil.getEntityManager();
+
+        CriteriaBuilder criteria = em.getCriteriaBuilder();
+        CriteriaQuery <Cliente> query = criteria.createQuery(Cliente.class);
+        Root<Cliente> from = query.from(Cliente.class);
+        query.select(from);
+
+        List<Cliente> clientes = em.createQuery(query).getResultList();
+        clientes.forEach(System.out::println);
+
+        em.close();
+    }
+}
+```
+
+<h3>Explicación paso a paso de cada método:</h3>
+
+- `EntityManager em = JpaUtil.getEntityManager();`
+Este método obtiene un <b>EntityManager</b>, que es el objeto principal para interactuar con la base de datos a través de JPA. El `EntityManager` permite realizar operaciones CRUD (crear, leer, actualizar, eliminar) sobre las entidades persistentes.
+  - <b>EntityManager</b>: Administra el ciclo de vida de las entidades y actúa como un puente entre el código Java y la base de datos.
+
+- `CriteriaBuilder criteria = em.getCriteriaBuilder();`
+Este método obtiene un <b>CriteriaBuilder</b> del `EntityManager`. El `CriteriaBuilder` es el objeto principal que proporciona los métodos necesarios para construir consultas programáticamente con la API de Criteria.
+  - <b>CriteriaBuilder</b>: Se utiliza para construir las diferentes partes de una consulta, como seleccionar, agregar condiciones, ordenar, agrupar, etc.
+ 
+- `CriteriaQuery<Cliente> query = criteria.createQuery(Cliente.class);`
+Este método crea una <b>CriteriaQuery</b> para una consulta específica de la entidad `Cliente`. El tipo genérico `<Cliente>` indica que la consulta va a devolver una lista de objetos de tipo `Cliente`.
+  - <b>CriteriaQuery</b>: Representa la consulta que se va a construir. Define lo que se va a seleccionar y cómo se va a estructurar la consulta. En este caso, se va a seleccionar todos los objetos `Cliente`.
+
+- `Root<Cliente> from = query.from(Cliente.class);`
+Aquí se define la <b>raíz</b> (root) de la consulta. La raíz representa la tabla o entidad sobre la cual se realizará la consulta. En este caso, `Cliente` es la entidad raíz, lo que significa que se van a consultar los registros de la tabla `Cliente`.
+  - <b>Root</b>: Especifica desde dónde comienzan las consultas. Representa una entidad principal en la consulta y se usa para referirse a sus atributos y generar las condiciones de la consulta.
+
+- `query.select(from)`;
+Este método indica que se va a seleccionar (es decir, se quiere recuperar) todo lo que está en la raíz `from`, que en este caso es la entidad `Cliente`. Es una instrucción equivalente a un `SELECT *` en SQL.
+  - <b>select()</b>: Define qué columnas o atributos se van a devolver como resultado. En este caso, selecciona toda la entidad `Cliente`.
+
+- `List<Cliente> clientes = em.createQuery(query).getResultList();`
+  - `em.createQuery(query)` ejecuta la consulta creada y devuelve un objeto `TypedQuery<Cliente>`. Esto prepara la consulta para su ejecución.
+  - `getResultList()` ejecuta la consulta y devuelve los resultados como una lista de objetos de tipo `Cliente`.
+
