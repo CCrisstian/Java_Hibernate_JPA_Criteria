@@ -40,10 +40,10 @@ public class HibernateCriteria {
 - `CriteriaBuilder criteria = em.getCriteriaBuilder();`
   - `CriteriaBuilder`: Es una interfaz que se utiliza para crear consultas de Criteria en JPA. Proporciona métodos para construir de manera programática diferentes componentes de una consulta, como selecciones, predicados, órdenes, etc.
   - `em.getCriteriaBuilder()`: Obtiene una instancia de `CriteriaBuilder` del `EntityManager`, que se usará para construir la consulta.
- 
+
 -  `CriteriaQuery<Cliente> query = criteria.createQuery(Cliente.class);`
-  - `CriteriaQuery<Cliente>`: Especifica el tipo de objeto que se devolverá en el resultado de la consulta. En este caso, es del tipo `Cliente`.
-  - `criteria.createQuery(Cliente.class)`: Crea una instancia de CriteriaQuery para la entidad `Cliente`, lo que permite definir una consulta específica para recuperar instancias de la clase `Cliente`.
+    -  `CriteriaQuery<Cliente>`: Especifica el tipo de objeto que se devolverá en el resultado de la consulta. En este caso, es del tipo `Cliente`.
+    -  `criteria.createQuery(Cliente.class)`: Crea una instancia de CriteriaQuery para la entidad `Cliente`, lo que permite definir una consulta específica para recuperar instancias de la clase `Cliente`.
   
 - `Root<Cliente> from = query.from(Cliente.class);`
   - `Root<Cliente>`: Es una instancia que representa una de las entidades principales desde la cual se realizará la consulta. Es el "punto de partida" de la consulta.
