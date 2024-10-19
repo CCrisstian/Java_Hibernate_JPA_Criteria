@@ -61,6 +61,7 @@ System.out.println("\n============= WHERE EQUALS =============\n");
 
 ParameterExpression<String> nombreParam = criteria.parameter(String.class, "nombre");
 query.select(from).where(criteria.equal(from.get("nombre"), nombreParam));
+
 clientes = em.createQuery(query).setParameter("nombre","Andres").getResultList();
 ```
 
@@ -78,3 +79,84 @@ clientes = em.createQuery(query).setParameter("nombre","Andres").getResultList()
     - `em.createQuery(query)`: Crea una consulta de tipo `TypedQuery<Cliente>` basada en la `CriteriaQuery` configurada con la condición `WHERE`.
     - `.setParameter("nombre", "Andres")`: Asigna el valor "Andres" al parámetro llamado `nombre`. Esto significa que el filtro `WHERE` buscará clientes cuyo nombre sea igual a "Andres".
     - `.getResultList()`: Ejecuta la consulta y devuelve una lista con los resultados que cumplen con la condición especificada (clientes cuyo nombre es "Andres").
+
+```java
+System.out.println("\n============= WHERE LIKE =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+
+query.select(from).where(criteria.like(from.get("nombre"), "%and%"));
+
+clientes = em.createQuery(query).getResultList();
+```
+
+- `query.select(from).where(criteria.like(from.get("nombre"), "%and%"));`
+    - `query.select(from)`: Selecciona toda la entidad `Cliente` como resultado de la consulta, similar a un `SELECT *` en SQL.
+    - `.where(criteria.like(from.get("nombre"), "%and%"))`: Agrega una cláusula `WHERE` a la consulta, usando la condición `LIKE` para realizar coincidencias parciales.
+        - `criteria.like(from.get("nombre"), "%and%")`: Crea una condición `LIKE` para el campo `nombre` de la entidad `Cliente`. El valor `"%and%"`.
+        - `from.get("nombre")`: Hace referencia a la propiedad `nombre` de la entidad `Cliente`, como acceder al campo `nombre` en una tabla SQL.
+
+```java
+System.out.println("\n============= WHERE LIKE 2 =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+
+ParameterExpression<String> nombreParamLike = criteria.parameter(String.class, "nombreParam");
+
+query.select(from).where(criteria.like(criteria.upper(from.get("nombre")), criteria.upper(nombreParamLike)));
+
+clientes = em.createQuery(query).setParameter("nombreParam", "%and%").getResultList();
+```
+
+- `ParameterExpression<String> nombreParamLike = criteria.parameter(String.class, "nombreParam");`
+    - Crea un parámetro de la consulta de tipo `String`, llamado `"nombreParam"`. Este parámetro se utilizará para pasar dinámicamente un valor a la consulta.
+
+- `query.select(from).where(criteria.like(criteria.upper(from.get("nombre")), criteria.upper(nombreParamLike)));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) en la consulta.
+    - `.where(...)`: Añade la condición `WHERE` a la consulta.
+    - `criteria.like(criteria.upper(from.get("nombre")), criteria.upper(nombreParamLike))`: Crea una condición `LIKE` para comparar el campo `nombre` con el valor del parámetro, ignorando diferencias de mayúsculas y minúsculas:
+        - `criteria.upper(from.get("nombre"))`: Convierte el valor del campo `nombre` a mayúsculas antes de compararlo. Esto permite realizar una búsqueda sin distinguir entre mayúsculas y minúsculas.
+        - `criteria.upper(nombreParamLike)`: Convierte el valor del parámetro `nombreParam` a mayúsculas. Así, la comparación se realiza con ambos valores convertidos a mayúsculas.
+    - De esta forma, la comparación `LIKE` se realiza en mayúsculas, lo que la hace insensible a diferencias de capitalización en los nombres.
+
+- `clientes = em.createQuery(query).setParameter("nombreParam", "%and%").getResultList();`
+    - `em.createQuery(query)`: Crea una consulta de tipo `TypedQuery<Cliente>` basada en la `CriteriaQuery` configurada con la condición `LIKE`.
+    - `.setParameter("nombreParam", "%and%")`: Asigna el valor `"%and%"` al parámetro `"nombreParam"`.
+    - `.getResultList()`: Ejecuta la consulta y devuelve una lista de resultados que cumplen con la condición especificada.
+ 
+ ```java
+System.out.println("\n============= WHERE BETWEEN =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+query.select(from).where(criteria.between(from.get("id"),2L, 6L));
+
+clientes = em.createQuery(query).getResultList();
+clientes.forEach(System.out::println);
+```
+
+- `query.select(from).where(criteria.between(from.get("id"), 2L, 6L));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta por la consulta.
+    - `.where(criteria.between(from.get("id"), 2L, 6L))`: Añade la condición `WHERE` con la cláusula `BETWEEN` para filtrar los resultados:
+        - `criteria.between(from.get("id"), 2L, 6L)`: Indica que el valor del campo `id` de la entidad `Cliente` debe estar entre `2L` y `6L`, ambos inclusive. En SQL, esto sería equivalente a `WHERE id BETWEEN 2 AND 6`.
+        - `from.get("id")`: Hace referencia al campo `id` de la entidad `Cliente`.
+ 
+```java
+System.out.println("\n============= WHERE IN =============\n");
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+
+query.select(from).where(from.get("nombre").in("Andres","John","Lou"));
+
+clientes = em.createQuery(query).getResultList();
+clientes.forEach(System.out::println);
+```
+
+- `query.select(from).where(from.get("nombre").in("Andres", "John", "Lou"));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta por la consulta.
+    - `.where(...)`: Añade la condición `WHERE` a la consulta.
+    - `from.get("nombre").in("Andres", "John", "Lou")`: Establece una condición `IN`, que busca clientes cuyo nombre esté en la lista especificada. Es equivalente a la cláusula `WHERE nombre IN ('Andres', 'John', 'Lou')` en SQL.
+        - `from.get("nombre")`: Hace referencia al campo `nombre` de la entidad `Cliente`.
+        - `in("Andres", "John", "Lou")`: Especifica que el valor del campo `nombre` debe coincidir con alguno de los valores en la lista {"Andres", "John", "Lou"}.
