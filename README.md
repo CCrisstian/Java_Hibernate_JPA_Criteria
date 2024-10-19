@@ -149,15 +149,15 @@ System.out.println("\n============= WHERE IN =============\n");
 query = criteria.createQuery(Cliente.class);
 from = query.from(Cliente.class);
 
-query.select(from).where(from.get("nombre").in("Andres","John","Lou"));
+query.select(from).where(from.get("nombre").in(Arrays.asList("Andres", "John", "Lou")));
 
 clientes = em.createQuery(query).getResultList();
 clientes.forEach(System.out::println);
 ```
 
-- `query.select(from).where(from.get("nombre").in("Andres", "John", "Lou"));`
+- `query.select(from).where(from.get("nombre").in(Arrays.asList("Andres", "John", "Lou")));`
     - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta por la consulta.
-    - `.where(...)`: Añade la condición `WHERE` a la consulta.
-    - `from.get("nombre").in("Andres", "John", "Lou")`: Establece una condición `IN`, que busca clientes cuyo nombre esté en la lista especificada. Es equivalente a la cláusula `WHERE nombre IN ('Andres', 'John', 'Lou')` en SQL.
+    - `.where(from.get("nombre").in(Arrays.asList("Andres", "John", "Lou")))`: Establece una condición `IN`, que busca clientes cuyo nombre esté en la lista especificada. Es equivalente a la cláusula `WHERE nombre IN ('Andres', 'John', 'Lou')` en SQL.
+        - `.where(...)`: Añade la condición `WHERE` a la consulta.
         - `from.get("nombre")`: Hace referencia al campo `nombre` de la entidad `Cliente`.
-        - `in("Andres", "John", "Lou")`: Especifica que el valor del campo `nombre` debe coincidir con alguno de los valores en la lista {"Andres", "John", "Lou"}.
+        - `.in(Arrays.asList("Andres", "John", "Lou"))`: Establece una condición `IN`, especificando una lista de valores con los que se comparará el campo `nombre`. En lugar de pasar directamente los valores, se utiliza `Arrays.asList(...)` para crear una lista con los nombres "Andres", "John", y "Lou".
