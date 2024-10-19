@@ -55,3 +55,24 @@ public class HibernateCriteria {
 - `List<Cliente> clientes = em.createQuery(query).getResultList()`;
   - `em.createQuery(query)`: Crea una consulta de tipo `TypedQuery<Cliente>` basada en la `CriteriaQuery` previamente construida.
   - `.getResultList()`: Ejecuta la consulta y devuelve una lista de resultados del tipo especificado (`Cliente`). En este caso, se devuelve una lista con todas las instancias de `Cliente` que cumplen con los criterios definidos en la consulta.
+
+```java
+ParameterExpression<String> nombreParam = criteria.parameter(String.class, "nombre");
+query.select(from).where(criteria.equal(from.get("nombre"), nombreParam));
+clientes = em.createQuery(query).setParameter("nombre","Andres").getResultList();
+```
+
+- `ParameterExpression<String> nombreParam = criteria.parameter(String.class, "nombre");`
+    - `ParameterExpression<String>`: Especifica un parámetro de la consulta de tipo `String`. Este parámetro se utilizará en la condición `WHERE` para establecer un valor dinámico en la consulta.
+    - `criteria.parameter(String.class, "nombre")`: Crea una expresión de parámetro para el tipo `String` y le asigna un nombre ("nombre"). Este parámetro se usará más adelante para establecer el valor del nombre del cliente que queremos filtrar.
+
+- `query.select(from).where(criteria.equal(from.get("nombre"), nombreParam));`
+    - `query.select(from)`: Selecciona la entidad completa (Cliente) en la consulta, similar a la parte `SELECT` en SQL.
+    - `.where(criteria.equal(from.get("nombre"), nombreParam))`: Configura la cláusula `WHERE` de la consulta para filtrar los resultados. Vamos a desglosar esta parte:
+        - `criteria.equal(from.get("nombre"), nombreParam)`: Crea una condición de igualdad, donde el valor de la propiedad `nombre` de la entidad `Cliente` debe ser igual al valor del parámetro `nombreParam`. Es similar a `WHERE nombre = ?` en SQL, donde el `?` será reemplazado por un valor específico más adelante.
+        - `from.get("nombre")`: Hace referencia a la propiedad nombre de la entidad `Cliente`. Es como acceder al campo `nombre` en una tabla.
+
+- `clientes = em.createQuery(query).setParameter("nombre", "Andres").getResultList();`
+    - `em.createQuery(query)`: Crea una consulta de tipo `TypedQuery<Cliente>` basada en la `CriteriaQuery` configurada con la condición `WHERE`.
+    - `.setParameter("nombre", "Andres")`: Asigna el valor "Andres" al parámetro llamado `nombre`. Esto significa que el filtro `WHERE` buscará clientes cuyo nombre sea igual a "Andres".
+    - `.getResultList()`: Ejecuta la consulta y devuelve una lista con los resultados que cumplen con la condición especificada (clientes cuyo nombre es "Andres").
