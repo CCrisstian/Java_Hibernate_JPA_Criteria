@@ -161,3 +161,36 @@ clientes.forEach(System.out::println);
         - `.where(...)`: Añade la condición `WHERE` a la consulta.
         - `from.get("nombre")`: Hace referencia al campo `nombre` de la entidad `Cliente`.
         - `.in(Arrays.asList("Andres", "John", "Lou"))`: Establece una condición `IN`, especificando una lista de valores con los que se comparará el campo `nombre`. En lugar de pasar directamente los valores, se utiliza `Arrays.asList(...)` para crear una lista con los nombres "Andres", "John", y "Lou".
+
+```java
+System.out.println("\n============= Filtrar usando predicados Mayor Igual que =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+
+query.select(from).where(criteria.ge(from.get("id"), 3L));
+
+clientes = em.createQuery(query).getResultList();
+clientes.forEach(System.out::println);
+```
+- `query.select(from).where(criteria.ge(from.get("id"), 3L));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta.
+    - `.where(...)`: Añade una condición `WHERE`.
+    - `criteria.ge(from.get("id"), 3L)`: Crea un predicado para filtrar los resultados, especificando que el campo `id` debe ser mayor o igual a 3. Equivale a `WHERE id >= 3` en SQL.
+
+
+```java
+System.out.println("\n============= Filtrar usando predicados Mayor que =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+        query.select(from).where(criteria.gt(criteria.length(from.get("nombre")), 5L));
+
+clientes = em.createQuery(query).getResultList();
+clientes.forEach(System.out::println);
+```
+
+- `query.select(from).where(criteria.gt(criteria.length(from.get("nombre")), 5L));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta por la consulta.
+    - `.where(...)`: Añade la condición `WHERE`.
+    - `criteria.gt(criteria.length(from.get("nombre")), 5L)`: Crea un predicado que filtra los resultados, especificando que la longitud del campo `nombre` debe ser mayor a 5. Este predicado equivale a `WHERE LENGTH(nombre) > 5` en SQL.
