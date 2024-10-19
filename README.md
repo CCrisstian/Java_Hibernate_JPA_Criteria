@@ -145,6 +145,7 @@ clientes.forEach(System.out::println);
  
 ```java
 System.out.println("\n============= WHERE IN =============\n");
+
 query = criteria.createQuery(Cliente.class);
 from = query.from(Cliente.class);
 
