@@ -57,6 +57,8 @@ public class HibernateCriteria {
   - `.getResultList()`: Ejecuta la consulta y devuelve una lista de resultados del tipo especificado (`Cliente`). En este caso, se devuelve una lista con todas las instancias de `Cliente` que cumplen con los criterios definidos en la consulta.
 
 ```java
+        System.out.println("\n============= WHERE EQUALS =============\n");
+
 ParameterExpression<String> nombreParam = criteria.parameter(String.class, "nombre");
 query.select(from).where(criteria.equal(from.get("nombre"), nombreParam));
 clientes = em.createQuery(query).setParameter("nombre","Andres").getResultList();
