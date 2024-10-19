@@ -2,7 +2,7 @@
 <p>Criteria API es parte de JPA 2.0 y ofrece una manera orientada a objetos para construir consultas. En lugar de escribir una consulta JPQL o SQL directamente como una cadena de texto, Criteria API permite crear las consultas utilizando código Java, lo que hace que sean más dinámicas y seguras en cuanto a tipos.</p>
 <h2>Criteria API se usa cuando:</h2>
 
-- <b>Consultas dinámicas</b>: Es necesario construir consultas de manera programática en función de las condiciones del negocio. Por ejemplo, si se quiere agregar filtros a la consulta de forma condicional, Criteria API permite hacerlo de manera fluida.
+- <b>Consultas dinámicas</b>: Es necesario construir consultas de manera programática en función de las condiciones del negocio.
 - <b>Seguridad en tipos</b>: Al ser una API orientada a objetos, Criteria es completamente <b>tipada</b>. Esto significa que los errores de sintaxis o tipos de datos incorrectos se detectan en tiempo de compilación y no en tiempo de ejecución, lo que mejora la seguridad y reduce la posibilidad de errores.
 - <b>Consultas complejas</b>: Permite crear consultas más complejas que podrían involucrar múltiples criterios, asociaciones entre entidades, agregaciones, y más.
 
@@ -13,7 +13,7 @@
 - <b>Compatibilidad con JPA</b>: Criteria API es parte de JPA, lo que significa que es compatible con cualquier implementación de JPA (como Hibernate, EclipseLink, etc.).
 - <b>Construcción de consultas complejas</b>: Es muy útil cuando se necesitan consultas que involucren múltiples relaciones, agrupamientos o funciones de agregación.
 
-<h1 align="center">CriteriaBuilder, CriteriaQuery <...>, Root <...></h1>
+<h1 align="center">Criteria y EntityManager</h1>
 
 ```java
 public class HibernateCriteria {
@@ -22,41 +22,175 @@ public class HibernateCriteria {
         EntityManager em = JpaUtil.getEntityManager();
 
         CriteriaBuilder criteria = em.getCriteriaBuilder();
+
+        System.out.println("\n============= Listar=============\n");
         CriteriaQuery <Cliente> query = criteria.createQuery(Cliente.class);
         Root<Cliente> from = query.from(Cliente.class);
         query.select(from);
 
         List<Cliente> clientes = em.createQuery(query).getResultList();
-        clientes.forEach(System.out::println);
-
-        em.close();
-    }
+  }
 }
 ```
 
-<h3>Explicación paso a paso de cada método:</h3>
-
 - `EntityManager em = JpaUtil.getEntityManager();`
-Este método obtiene un <b>EntityManager</b>, que es el objeto principal para interactuar con la base de datos a través de JPA. El `EntityManager` permite realizar operaciones CRUD (crear, leer, actualizar, eliminar) sobre las entidades persistentes.
-  - <b>EntityManager</b>: Administra el ciclo de vida de las entidades y actúa como un puente entre el código Java y la base de datos.
-
-- `CriteriaBuilder criteria = em.getCriteriaBuilder();`
-Este método obtiene un <b>CriteriaBuilder</b> del `EntityManager`. El `CriteriaBuilder` es el objeto principal que proporciona los métodos necesarios para construir consultas programáticamente con la API de Criteria.
-  - <b>CriteriaBuilder</b>: Se utiliza para construir las diferentes partes de una consulta, como seleccionar, agregar condiciones, ordenar, agrupar, etc.
+  -  `EntityManager`: Es una interfaz de JPA (Java Persistence API) que se utiliza para interactuar con el contexto de persistencia. Proporciona métodos para crear, leer, actualizar y eliminar entidades en la base de datos.
+  - `JpaUtil.getEntityManager()`: Aquí, se está llamando a un método `getEntityManager()` de la clase `JpaUtil`, que se supone que devuelve una instancia de `EntityManager`. Normalmente, este método configura el `EntityManager` usando una `EntityManagerFactory` para administrar el ciclo de vida de las entidades.
  
-- `CriteriaQuery<Cliente> query = criteria.createQuery(Cliente.class);`
-Este método crea una <b>CriteriaQuery</b> para una consulta específica de la entidad `Cliente`. El tipo genérico `<Cliente>` indica que la consulta va a devolver una lista de objetos de tipo `Cliente`.
-  - <b>CriteriaQuery</b>: Representa la consulta que se va a construir. Define lo que se va a seleccionar y cómo se va a estructurar la consulta. En este caso, se va a seleccionar todos los objetos `Cliente`.
+- `CriteriaBuilder criteria = em.getCriteriaBuilder();`
+  - `CriteriaBuilder`: Es una interfaz que se utiliza para crear consultas de Criteria en JPA. Proporciona métodos para construir de manera programática diferentes componentes de una consulta, como selecciones, predicados, órdenes, etc.
+  - `em.getCriteriaBuilder()`: Obtiene una instancia de `CriteriaBuilder` del `EntityManager`, que se usará para construir la consulta.
 
+-  `CriteriaQuery<Cliente> query = criteria.createQuery(Cliente.class);`
+    -  `CriteriaQuery<Cliente>`: Especifica el tipo de objeto que se devolverá en el resultado de la consulta. En este caso, es del tipo `Cliente`.
+    -  `criteria.createQuery(Cliente.class)`: Crea una instancia de CriteriaQuery para la entidad `Cliente`, lo que permite definir una consulta específica para recuperar instancias de la clase `Cliente`.
+  
 - `Root<Cliente> from = query.from(Cliente.class);`
-Aquí se define la <b>raíz</b> (root) de la consulta. La raíz representa la tabla o entidad sobre la cual se realizará la consulta. En este caso, `Cliente` es la entidad raíz, lo que significa que se van a consultar los registros de la tabla `Cliente`.
-  - <b>Root</b>: Especifica desde dónde comienzan las consultas. Representa una entidad principal en la consulta y se usa para referirse a sus atributos y generar las condiciones de la consulta.
+  - `Root<Cliente>`: Es una instancia que representa una de las entidades principales desde la cual se realizará la consulta. Es el "punto de partida" de la consulta.
+  - `query.from(Cliente.class)`: Indica que la consulta se realizará sobre la entidad `Cliente`. Es similar a la cláusula `FROM` en SQL.
+ 
+- `query.select(from);`
+  - `query.select(from)`: Configura la parte `SELECT` de la consulta, indicando que se desea seleccionar la entidad completa (`Cliente`) definida por el objeto `from`.
+ 
+- `List<Cliente> clientes = em.createQuery(query).getResultList()`;
+  - `em.createQuery(query)`: Crea una consulta de tipo `TypedQuery<Cliente>` basada en la `CriteriaQuery` previamente construida.
+  - `.getResultList()`: Ejecuta la consulta y devuelve una lista de resultados del tipo especificado (`Cliente`). En este caso, se devuelve una lista con todas las instancias de `Cliente` que cumplen con los criterios definidos en la consulta.
 
-- `query.select(from)`;
-Este método indica que se va a seleccionar (es decir, se quiere recuperar) todo lo que está en la raíz `from`, que en este caso es la entidad `Cliente`. Es una instrucción equivalente a un `SELECT *` en SQL.
-  - <b>select()</b>: Define qué columnas o atributos se van a devolver como resultado. En este caso, selecciona toda la entidad `Cliente`.
+```java
+System.out.println("\n============= WHERE EQUALS =============\n");
 
-- `List<Cliente> clientes = em.createQuery(query).getResultList();`
-  - `em.createQuery(query)` ejecuta la consulta creada y devuelve un objeto `TypedQuery<Cliente>`. Esto prepara la consulta para su ejecución.
-  - `getResultList()` ejecuta la consulta y devuelve los resultados como una lista de objetos de tipo `Cliente`.
+ParameterExpression<String> nombreParam = criteria.parameter(String.class, "nombre");
+query.select(from).where(criteria.equal(from.get("nombre"), nombreParam));
 
+clientes = em.createQuery(query).setParameter("nombre","Andres").getResultList();
+```
+
+- `ParameterExpression<String> nombreParam = criteria.parameter(String.class, "nombre");`
+    - `ParameterExpression<String>`: Especifica un parámetro de la consulta de tipo `String`. Este parámetro se utilizará en la condición `WHERE` para establecer un valor dinámico en la consulta.
+    - `criteria.parameter(String.class, "nombre")`: Crea una expresión de parámetro para el tipo `String` y le asigna un nombre ("nombre"). Este parámetro se usará más adelante para establecer el valor del nombre del cliente que queremos filtrar.
+
+- `query.select(from).where(criteria.equal(from.get("nombre"), nombreParam));`
+    - `query.select(from)`: Selecciona la entidad completa (Cliente) en la consulta, similar a la parte `SELECT` en SQL.
+    - `.where(criteria.equal(from.get("nombre"), nombreParam))`: Configura la cláusula `WHERE` de la consulta para filtrar los resultados. Vamos a desglosar esta parte:
+        - `criteria.equal(from.get("nombre"), nombreParam)`: Crea una condición de igualdad, donde el valor de la propiedad `nombre` de la entidad `Cliente` debe ser igual al valor del parámetro `nombreParam`. Es similar a `WHERE nombre = ?` en SQL, donde el `?` será reemplazado por un valor específico más adelante.
+        - `from.get("nombre")`: Hace referencia a la propiedad nombre de la entidad `Cliente`. Es como acceder al campo `nombre` en una tabla.
+
+- `clientes = em.createQuery(query).setParameter("nombre", "Andres").getResultList();`
+    - `em.createQuery(query)`: Crea una consulta de tipo `TypedQuery<Cliente>` basada en la `CriteriaQuery` configurada con la condición `WHERE`.
+    - `.setParameter("nombre", "Andres")`: Asigna el valor "Andres" al parámetro llamado `nombre`. Esto significa que el filtro `WHERE` buscará clientes cuyo nombre sea igual a "Andres".
+    - `.getResultList()`: Ejecuta la consulta y devuelve una lista con los resultados que cumplen con la condición especificada (clientes cuyo nombre es "Andres").
+
+```java
+System.out.println("\n============= WHERE LIKE =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+
+query.select(from).where(criteria.like(from.get("nombre"), "%and%"));
+
+clientes = em.createQuery(query).getResultList();
+```
+
+- `query.select(from).where(criteria.like(from.get("nombre"), "%and%"));`
+    - `query.select(from)`: Selecciona toda la entidad `Cliente` como resultado de la consulta, similar a un `SELECT *` en SQL.
+    - `.where(criteria.like(from.get("nombre"), "%and%"))`: Agrega una cláusula `WHERE` a la consulta, usando la condición `LIKE` para realizar coincidencias parciales.
+        - `criteria.like(from.get("nombre"), "%and%")`: Crea una condición `LIKE` para el campo `nombre` de la entidad `Cliente`. El valor `"%and%"`.
+        - `from.get("nombre")`: Hace referencia a la propiedad `nombre` de la entidad `Cliente`, como acceder al campo `nombre` en una tabla SQL.
+
+```java
+System.out.println("\n============= WHERE LIKE 2 =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+
+ParameterExpression<String> nombreParamLike = criteria.parameter(String.class, "nombreParam");
+
+query.select(from).where(criteria.like(criteria.upper(from.get("nombre")), criteria.upper(nombreParamLike)));
+
+clientes = em.createQuery(query).setParameter("nombreParam", "%and%").getResultList();
+```
+
+- `ParameterExpression<String> nombreParamLike = criteria.parameter(String.class, "nombreParam");`
+    - Crea un parámetro de la consulta de tipo `String`, llamado `"nombreParam"`. Este parámetro se utilizará para pasar dinámicamente un valor a la consulta.
+
+- `query.select(from).where(criteria.like(criteria.upper(from.get("nombre")), criteria.upper(nombreParamLike)));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) en la consulta.
+    - `.where(...)`: Añade la condición `WHERE` a la consulta.
+    - `criteria.like(criteria.upper(from.get("nombre")), criteria.upper(nombreParamLike))`: Crea una condición `LIKE` para comparar el campo `nombre` con el valor del parámetro, ignorando diferencias de mayúsculas y minúsculas:
+        - `criteria.upper(from.get("nombre"))`: Convierte el valor del campo `nombre` a mayúsculas antes de compararlo. Esto permite realizar una búsqueda sin distinguir entre mayúsculas y minúsculas.
+        - `criteria.upper(nombreParamLike)`: Convierte el valor del parámetro `nombreParam` a mayúsculas. Así, la comparación se realiza con ambos valores convertidos a mayúsculas.
+    - De esta forma, la comparación `LIKE` se realiza en mayúsculas, lo que la hace insensible a diferencias de capitalización en los nombres.
+
+- `clientes = em.createQuery(query).setParameter("nombreParam", "%and%").getResultList();`
+    - `em.createQuery(query)`: Crea una consulta de tipo `TypedQuery<Cliente>` basada en la `CriteriaQuery` configurada con la condición `LIKE`.
+    - `.setParameter("nombreParam", "%and%")`: Asigna el valor `"%and%"` al parámetro `"nombreParam"`.
+    - `.getResultList()`: Ejecuta la consulta y devuelve una lista de resultados que cumplen con la condición especificada.
+ 
+ ```java
+System.out.println("\n============= WHERE BETWEEN =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+query.select(from).where(criteria.between(from.get("id"),2L, 6L));
+
+clientes = em.createQuery(query).getResultList();
+clientes.forEach(System.out::println);
+```
+
+- `query.select(from).where(criteria.between(from.get("id"), 2L, 6L));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta por la consulta.
+    - `.where(criteria.between(from.get("id"), 2L, 6L))`: Añade la condición `WHERE` con la cláusula `BETWEEN` para filtrar los resultados:
+        - `criteria.between(from.get("id"), 2L, 6L)`: Indica que el valor del campo `id` de la entidad `Cliente` debe estar entre `2L` y `6L`, ambos inclusive. En SQL, esto sería equivalente a `WHERE id BETWEEN 2 AND 6`.
+        - `from.get("id")`: Hace referencia al campo `id` de la entidad `Cliente`.
+ 
+```java
+System.out.println("\n============= WHERE IN =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+
+query.select(from).where(from.get("nombre").in(Arrays.asList("Andres", "John", "Lou")));
+
+clientes = em.createQuery(query).getResultList();
+clientes.forEach(System.out::println);
+```
+
+- `query.select(from).where(from.get("nombre").in(Arrays.asList("Andres", "John", "Lou")));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta por la consulta.
+    - `.where(from.get("nombre").in(Arrays.asList("Andres", "John", "Lou")))`: Establece una condición `IN`, que busca clientes cuyo nombre esté en la lista especificada. Es equivalente a la cláusula `WHERE nombre IN ('Andres', 'John', 'Lou')` en SQL.
+        - `.where(...)`: Añade la condición `WHERE` a la consulta.
+        - `from.get("nombre")`: Hace referencia al campo `nombre` de la entidad `Cliente`.
+        - `.in(Arrays.asList("Andres", "John", "Lou"))`: Establece una condición `IN`, especificando una lista de valores con los que se comparará el campo `nombre`. En lugar de pasar directamente los valores, se utiliza `Arrays.asList(...)` para crear una lista con los nombres "Andres", "John", y "Lou".
+
+```java
+System.out.println("\n============= Filtrar usando predicados Mayor Igual que =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+
+query.select(from).where(criteria.ge(from.get("id"), 3L));
+
+clientes = em.createQuery(query).getResultList();
+clientes.forEach(System.out::println);
+```
+- `query.select(from).where(criteria.ge(from.get("id"), 3L));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta.
+    - `.where(...)`: Añade una condición `WHERE`.
+    - `criteria.ge(from.get("id"), 3L)`: Crea un predicado para filtrar los resultados, especificando que el campo `id` debe ser mayor o igual a 3. Equivale a `WHERE id >= 3` en SQL.
+
+
+```java
+System.out.println("\n============= Filtrar usando predicados Mayor que =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+        query.select(from).where(criteria.gt(criteria.length(from.get("nombre")), 5L));
+
+clientes = em.createQuery(query).getResultList();
+clientes.forEach(System.out::println);
+```
+
+- `query.select(from).where(criteria.gt(criteria.length(from.get("nombre")), 5L));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta por la consulta.
+    - `.where(...)`: Añade la condición `WHERE`.
+    - `criteria.gt(criteria.length(from.get("nombre")), 5L)`: Crea un predicado que filtra los resultados, especificando que la longitud del campo `nombre` debe ser mayor a 5. Este predicado equivale a `WHERE LENGTH(nombre) > 5` en SQL.
