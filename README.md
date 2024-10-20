@@ -16,23 +16,19 @@
 <h1 align="center">Criteria y EntityManager</h1>
 
 ```java
-public class HibernateCriteria {
-    public static void main(String[] args) {
+EntityManager em = JpaUtil.getEntityManager();
 
-        EntityManager em = JpaUtil.getEntityManager();
+CriteriaBuilder criteria = em.getCriteriaBuilder();
 
-        CriteriaBuilder criteria = em.getCriteriaBuilder();
+System.out.println("\n============= Listar=============\n");
 
-        System.out.println("\n============= Listar=============\n");
-        CriteriaQuery <Cliente> query = criteria.createQuery(Cliente.class);
-        Root<Cliente> from = query.from(Cliente.class);
-        query.select(from);
+CriteriaQuery <Cliente> query = criteria.createQuery(Cliente.class);
+Root<Cliente> from = query.from(Cliente.class);
+query.select(from);
 
-        List<Cliente> clientes = em.createQuery(query).getResultList();
+List<Cliente> clientes = em.createQuery(query).getResultList();
 
-        em.close();
-  }
-}
+em.close();
 ```
 
 - `EntityManager em = JpaUtil.getEntityManager();`
@@ -223,7 +219,7 @@ System.out.println("\n============= Consultas con ORDER BY ASC | DESC ==========
 query = criteria.createQuery(Cliente.class);
 from = query.from(Cliente.class);
 
-        query.select(from).orderBy(criteria.asc(from.get("nombre")), criteria.desc(from.get("apellido")));
+query.select(from).orderBy(criteria.asc(from.get("nombre")), criteria.desc(from.get("apellido")));
 
 clientes = em.createQuery(query).getResultList();
 clientes.forEach(System.out::println);
