@@ -29,6 +29,8 @@ public class HibernateCriteria {
         query.select(from);
 
         List<Cliente> clientes = em.createQuery(query).getResultList();
+
+        em.close();
   }
 }
 ```
@@ -55,6 +57,8 @@ public class HibernateCriteria {
 - `List<Cliente> clientes = em.createQuery(query).getResultList()`;
   - `em.createQuery(query)`: Crea una consulta de tipo `TypedQuery<Cliente>` basada en la `CriteriaQuery` previamente construida.
   - `.getResultList()`: Ejecuta la consulta y devuelve una lista de resultados del tipo especificado (`Cliente`). En este caso, se devuelve una lista con todas las instancias de `Cliente` que cumplen con los criterios definidos en la consulta.
+
+- `em.close();`: Cierra el `EntityManager` para liberar los recursos y finalizar la conexión con la base de datos.
 
 ```java
 System.out.println("\n============= WHERE EQUALS =============\n");
@@ -194,3 +198,134 @@ clientes.forEach(System.out::println);
     - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta por la consulta.
     - `.where(...)`: Añade la condición `WHERE`.
     - `criteria.gt(criteria.length(from.get("nombre")), 5L)`: Crea un predicado que filtra los resultados, especificando que la longitud del campo `nombre` debe ser mayor a 5. Este predicado equivale a `WHERE LENGTH(nombre) > 5` en SQL.
+
+```java
+System.out.println("\n============= Filtrar usando predicados Mayor que =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+        query.select(from).where(criteria.gt(criteria.length(from.get("nombre")), 5L));
+
+clientes = em.createQuery(query).getResultList();
+clientes.forEach(System.out::println);
+```
+
+- `query.select(from).where(criteria.and(p3, criteria.or(porNombre3, porFormaPago3)));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta.
+    - `.where(...)`: Añade la condición `WHERE`.
+    - `criteria.and(...)`: Combina los predicados utilizando la conjunción lógica `AND`. En este caso, requiere que p3 (id mayor o igual a 4) sea verdadero.
+    - `criteria.or(porNombre3, porFormaPago3)`: Aplica la disyunción lógica `OR`, que verifica si el `nombre` es "Andres" o la `formaPago` es "debito".
+    - En conjunto, la condición equivale a `WHERE id >= 4 AND (nombre = 'Andres' OR formaPago = 'debito')` en SQL.
+
+```java
+System.out.println("\n============= Consultas con ORDER BY ASC | DESC =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+
+        query.select(from).orderBy(criteria.asc(from.get("nombre")), criteria.desc(from.get("apellido")));
+
+clientes = em.createQuery(query).getResultList();
+clientes.forEach(System.out::println);
+```
+
+- `query.select(from).orderBy(criteria.asc(from.get("nombre")), criteria.desc(from.get("apellido")));`
+    - `query.select(from)`: Selecciona la entidad completa (`Cliente`) para ser devuelta por la consulta.
+    - `.orderBy(...)`: Especifica el orden en el que se devolverán los resultados.
+    - `criteria.asc(from.get("nombre"))`: Ordena los resultados en orden ascendente (`ASC`) por el campo `nombre`.
+    - `criteria.desc(from.get("apellido"))`: Ordena los resultados en orden descendente (`DESC`) por el campo `apellido`.
+ 
+```java
+System.out.println("\n============= Consultas por Id =============\n");
+
+query = criteria.createQuery(Cliente.class);
+from = query.from(Cliente.class);
+
+ParameterExpression<Long> idParam = criteria.parameter(Long.class, "id");
+
+query.select(from).where(criteria.equal(from.get("id"), idParam));
+
+Cliente cliente = em.createQuery(query).setParameter("id",1L).getSingleResult();
+
+System.out.println(cliente);
+```
+
+- `ParameterExpression<Long> idParam = criteria.parameter(Long.class, "id");`: Crea un parámetro de tipo `Long` llamado `id` que se utilizará en la condición de la consulta.
+- `query.select(from).where(criteria.equal(from.get("id"), idParam));`
+    - `query.select(from)`: Selecciona la entidad `Cliente` completa.
+    - `.where(criteria.equal(from.get("id"), idParam))`: Añade una condición `WHERE` que filtra los resultados para que el campo `id` sea igual al valor del parámetro `idParam`.
+- `Cliente cliente = em.createQuery(query).setParameter("id", 1L).getSingleResult();`
+    - `em.createQuery(query)`: Crea la consulta con el `EntityManager`.
+    - `.setParameter("id", 1L)`: Asigna el valor `1L` al parámetro `id`.
+    - `.getSingleResult()`: Ejecuta la consulta y devuelve un único resultado (`Cliente`), dado que se espera un registro único con ese `id`.
+
+```java
+System.out.println("\n============= Consultas DISTINCT por Nombre de Cliente =============\n");
+
+queryString = criteria.createQuery(String.class);
+from = queryString.from(Cliente.class);
+
+queryString.select(criteria.upper(from.get("nombre"))).distinct(true);
+
+nombres = em.createQuery(queryString).getResultList();
+nombres.forEach(System.out::println);
+```
+
+- `queryString.select(criteria.upper(from.get("nombre"))).distinct(true);`
+    - `queryString.select(criteria.upper(from.get("nombre")))`: Selecciona el campo `nombre` convertido a mayúsculas utilizando la función `upper()`.
+    - `.distinct(true)`: Aplica la cláusula `DISTINCT` para eliminar duplicados, asegurando que solo se devuelvan nombres únicos.
+
+```java
+System.out.println("\n============= Consultas por Campos Personalizados del Entity Cliente usando WHERE =============\n");
+
+CriteriaQuery<Object[]> queryObject = criteria.createQuery(Object[].class);
+from = queryObject.from(Cliente.class);
+
+queryObject.multiselect(from.get("id"),from.get("nombre"), from.get("apellido")).where(criteria.like(from.get("nombre"), "%lu%"));
+
+List<Object[]> registros = em.createQuery(queryObject).getResultList();
+
+registros.forEach(reg -> {
+    Long id = (Long) reg[0];
+    String nombre = (String) reg[1];
+    String apellido = (String) reg[2];
+    System.out.println("id = "+id+", nombre = "+nombre+", apellido = "+apellido);
+});
+```
+
+- `CriteriaQuery<Object[]> queryObject = criteria.createQuery(Object[].class);`
+- `from = queryObject.from(Cliente.class);`
+    - Se crea una instancia de `CriteriaQuery` para devolver un arreglo de `Object[]`, ya que se van a seleccionar múltiples campos específicos (no toda la entidad `Cliente`).
+    - `from` establece la entidad `Cliente` como origen de la consulta, equivalente a la cláusula `FROM` en SQL.
+- `queryObject.multiselect(from.get("id"), from.get("nombre"), from.get("apellido")).where(criteria.like(from.get("nombre"), "%lu%"));`
+    - `multiselect(from.get("id"), from.get("nombre"), from.get("apellido"))`: Selecciona los campos `id`, `nombre` y `apellido` del objeto `Cliente`.
+    - `.where(criteria.like(from.get("nombre"), "%lu%"))`: Aplica un filtro `LIKE` en el campo `nombre`, buscando nombres que contengan la subcadena "lu".
+- `List<Object[]> registros = em.createQuery(queryObject).getResultList();`
+    - Ejecuta la consulta y devuelve una lista de arreglos de objetos (`Object[]`), donde cada arreglo contiene los valores de `id`, `nombre` y `apellido` de un registro.
+
+ ```java
+System.out.println("\n============= Consulta COUNT(), Mínimo valor, Máximo valor de una Tabla =============\n");
+
+queryObject = criteria.createQuery(Object[].class);
+from = queryObject.from(Cliente.class);
+
+queryObject.multiselect(
+    criteria.count(from.get("id")),
+    criteria.sum(from.get("id")),
+    criteria.max(from.get("id")),
+    criteria.min(from.get("id")));
+
+registro = em.createQuery(queryObject).getSingleResult();
+count = (Long) registro[0];
+sum = (Long) registro[1];
+max = (Long) registro[2];
+min = (Long) registro[3];
+System.out.println("count = "+count+", sum = "+sum+", max = "+max+", min = "+min);
+```
+
+Este bloque de código realiza una consulta utilizando funciones agregadas (`COUNT`, `SUM`, `MAX`, `MIN`) en la entidad `Cliente`.
+
+- `criteria.count(from.get("id"))`: Cuenta el número de registros en la tabla `Cliente`.
+- `criteria.sum(from.get("id"))`: Calcula la suma de los valores del campo `id`.
+- `criteria.max(from.get("id"))`: Encuentra el valor máximo del campo `id`.
+- `criteria.min(from.get("id"))`: Encuentra el valor mínimo del campo `id`.
