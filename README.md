@@ -13,7 +13,7 @@
 - <b>Compatibilidad con JPA</b>: Criteria API es parte de JPA, lo que significa que es compatible con cualquier implementación de JPA (como Hibernate, EclipseLink, etc.).
 - <b>Construcción de consultas complejas</b>: Es muy útil cuando se necesitan consultas que involucren múltiples relaciones, agrupamientos o funciones de agregación.
 
-<h1 align="center">Criteria y EntityManager</h1>
+<h1 align="center">public class HibernateCriteria</h1>
 
 ```java
 EntityManager em = JpaUtil.getEntityManager();
@@ -325,3 +325,80 @@ Este bloque de código realiza una consulta utilizando funciones agregadas (`COU
 - `criteria.sum(from.get("id"))`: Calcula la suma de los valores del campo `id`.
 - `criteria.max(from.get("id"))`: Encuentra el valor máximo del campo `id`.
 - `criteria.min(from.get("id"))`: Encuentra el valor mínimo del campo `id`.
+
+<h1 align="center">public class HibernateCriteriaBusquedaDinamica</h1>
+
+```java
+public class HibernateCriteriaBusquedaDinamica {
+    public static void main(String[] args) {
+
+        Scanner s = new Scanner(System.in);
+
+        System.out.println("Filtro para nombre: ");
+        String nombre = s.nextLine();
+        System.out.println("Filtro para apellido: ");
+        String apellido = s.nextLine();
+        System.out.println("Filtro para la forma de pago: ");
+        String formaPago = s.nextLine();
+
+        EntityManager em = JpaUtil.getEntityManager();
+
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+
+        CriteriaQuery<Cliente> query = cb.createQuery(Cliente.class);
+        Root<Cliente> from = query.from(Cliente.class);
+
+        List<Predicate> condiciones = new ArrayList<>();
+
+        if (nombre != null && !nombre.isEmpty()){
+            condiciones.add(cb.equal(from.get("nombre"),nombre));
+        }
+        if (apellido != null && !apellido.isEmpty()){
+            condiciones.add(cb.equal(from.get("apellido"),apellido));
+        }
+        if (formaPago != null && !formaPago.isEmpty()){
+            condiciones.add(cb.equal(from.get("formaPago"),formaPago));
+        }
+
+        query.select(from).where(cb.and(condiciones.toArray(new Predicate[condiciones.size()])));
+
+        List<Cliente> clientes = em.createQuery(query).getResultList();
+        clientes.forEach(System.out::println);
+
+        em.close();
+    }
+}
+```
+
+El código en Java es un ejemplo de cómo realizar una búsqueda dinámica en la base de datos utilizando Hibernate y la API de Criteria. Permite filtrar registros de la entidad `Cliente` basándose en los criterios opcionales proporcionados por el usuario para el nombre, apellido y forma de pago.
+
+  - Lectura de filtros desde la entrada del usuario: Utiliza un `Scanner` para leer los criterios de búsqueda opcionales desde la consola (nombre, apellido y forma de pago).
+
+```java
+Scanner s = new Scanner(System.in);
+
+System.out.println("Filtro para nombre: ");
+String nombre = s.nextLine();
+System.out.println("Filtro para apellido: ");
+String apellido = s.nextLine();
+System.out.println("Filtro para la forma de pago: ");
+String formaPago = s.nextLine();
+```
+
+  - Creación de una lista de condiciones dinámicas (`Predicate`): Se crean condiciones (`Predicate`) dinámicamente, verificando si cada filtro proporcionado por el usuario no está vacío. Si el filtro está presente, se agrega una condición correspondiente a la lista.
+
+```java
+List<Predicate> condiciones = new ArrayList<>();
+
+if (nombre != null && !nombre.isEmpty()){
+    condiciones.add(cb.equal(from.get("nombre"), nombre));
+}
+if (apellido != null && !apellido.isEmpty()){
+    condiciones.add(cb.equal(from.get("apellido"), apellido));
+}
+if (formaPago != null && !formaPago.isEmpty()){
+    condiciones.add(cb.equal(from.get("formaPago"), formaPago));
+}
+```
+
+- Construcción de la consulta con las condiciones: Se seleccionan los registros de la entidad `Cliente` y se aplica un `where` con todas las condiciones (`Predicate`) combinadas usando `cb.and()`, lo que implica que todos los criterios especificados deben cumplirse.
